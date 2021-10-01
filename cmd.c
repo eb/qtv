@@ -290,7 +290,7 @@ void Cmd_StuffCmds (int argc, char *argv[])
 	}
 
 	if (build[0])
-		Cbuf_InsertText (build);
+		Cbuf_AddText (build);
 
 	Sys_free (text);
 	Sys_free (build);
