@@ -98,6 +98,39 @@ void close_source(sv_t *qtv, const char *where)
 	init_source(qtv); // set source to state SRC_BAD, its safe call it since we free all resorces like SOCKET and FILE
 }
 
+// Examples of how server values should be mapped to src:
+// "tcp:hostname:port" -> ""
+// "tcp:hostname:port@hostname:port" -> "tcp:hostname:port"
+// Note that in the next case we also skip "tcp:" prefix
+// "tcp:streamId@hostname:port" -> "streamId"
+// "tcp:streamId@hostname:port@hostname:port" -> "tcp:streamId@hostname:port"
+// "file:filename.mvd@hostname:port" -> "file:filename.mvd"
+// "file:filename.mvd@hostname:port@hostname:port" -> "file:filename.mvd@hostname:port"
+static char *getSourceFromServer(const char *server, char *src, size_t src_sz)
+{
+	char *at;
+	strlcpy(src, server, src_sz);
+	at = strchrrev(src, '@');
+	// If source is not specified, return empty value.
+	if (at == NULL) {
+		src[0] = 0; // empty source.
+		return src;
+	}
+	// Cut last "host:port" value, there could be more in case of chaining.
+	at[0] = 0;
+	// Check if we have more "host:port", if we do then return as is.
+	if (strchrrev(src, '@')) {
+		return src;
+	}
+	// Check if we does NOT have "tcp:" prefix then return as is.
+	if (strncmp(src, "tcp:", 4)) {
+		return src;
+	}
+	// Skip "tcp:" prefix.
+	memmove(src, src + 4, strlen(src) - 4 + 1);
+	return src;
+}
+
 void Net_SendQTVConnectionRequest(sv_t *qtv, char *authmethod, char *challenge)
 {
 	qtv->qstate = qs_parsingQTVheader;
@@ -110,34 +143,14 @@ void Net_SendQTVConnectionRequest(sv_t *qtv, char *authmethod, char *challenge)
 	}
 	else
 	{
-		char *at;
+		char source[sizeof(qtv->server)] = "";
 		char hash[512];
 
-		at = strchrrev(qtv->server, '@');
+		getSourceFromServer(qtv->server, source, sizeof(source));
 
-		if (at)
-		{
-			char *str;
-
-			*at = '\0'; // Here we modifying qtv->server, OUCH
-
-			if (strncmp(qtv->server, "tcp:", 4))
-			{
-				str = qtv->server;
-			}
-			else
-			{
-			 	if ((str = strchr(qtv->server, ':')))
-					str++;
-			}
-
-			// hm, str may be NULL, so we send "SOURCE: \n", is this correct?
-			Net_UpstreamPrintf(qtv, "SOURCE: %s\n", str ? str : "");
-
-			*at = '@'; // restore qtv->server
-		}
-		else
-		{
+		if (source[0]) {
+			Net_UpstreamPrintf(qtv, "SOURCE: %s\n", source);
+		} else {
 			Net_UpstreamPrintf(qtv, "RECEIVE\n");
 		}
 
