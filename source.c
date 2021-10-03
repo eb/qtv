@@ -193,6 +193,19 @@ void Net_SendQTVConnectionRequest(sv_t *qtv, char *authmethod, char *challenge)
 				{
 					Net_UpstreamPrintf(qtv, "AUTH: PLAIN\nPASSWORD: \"%s\"\n", qtv->ConnectPassword);
 				}
+				else if (challenge && strlen(challenge)>=63 && !strcmp(authmethod, "SHA3_512"))
+				{
+					sha3_context c;
+					const uint8_t *byte_hash;
+
+					sha3_Init512(&c);
+					sha3_Update(&c, challenge, strlen(challenge));
+					sha3_Update(&c, qtv->ConnectPassword, strlen(qtv->ConnectPassword));
+					byte_hash = sha3_Finalize(&c);
+					sha3_512_ByteToHex(hash, byte_hash);
+
+					Net_UpstreamPrintf(qtv, "AUTH: SHA3_512\nPASSWORD: \"%s\"\n", hash);
+				}
 				else if (challenge && strlen(challenge)>=32 && !strcmp(authmethod, "CCITT"))
 				{
 					unsigned short crcvalue;
@@ -227,7 +240,7 @@ void Net_SendQTVConnectionRequest(sv_t *qtv, char *authmethod, char *challenge)
 			}
 			else
 			{
-				Net_UpstreamPrintf(qtv, "AUTH: MD4\nAUTH: CCITT\nAUTH: PLAIN\nAUTH: NONE\n");
+				Net_UpstreamPrintf(qtv, "AUTH: SHA3_512\nAUTH: MD4\nAUTH: CCITT\nAUTH: PLAIN\nAUTH: NONE\n");
 			}
 		}
 	}

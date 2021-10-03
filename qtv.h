@@ -253,6 +253,7 @@ extern "C" {
 #include "cmd.h"
 #include "cvar.h"
 #include "info.h"
+#include "sha3.h"
 
 typedef struct 
 {
