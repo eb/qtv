@@ -1330,8 +1330,9 @@ int QTV_ParseMVD(sv_t *qtv)
 						if (IsSourceStream(qtv))
 							Sys_Printf("%s: Not enough buffered #2\n", qtv->server);
 					}
-
-					continue;
+					// We willing to break outside of the while loop
+					// but we could not since we inside switch, so goto for the rescue.
+					goto after_while;
 				}
 
 				// We're about to destroy this data, so it had better be forwarded by now!
@@ -1451,6 +1452,7 @@ int QTV_ParseMVD(sv_t *qtv)
 			Net_ReadStream(qtv); // FIXME: remove me
 		}
 	}
+after_while:
 
 	// Advance reconnect time in two cases: 
 	//	1) when we have src 
