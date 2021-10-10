@@ -1238,10 +1238,6 @@ float GuessPlaybackSpeed(sv_t *qtv)
 	if (qtv->qstate != qs_active)
 		return 1; // We are not ready, so use 100%.
 
-	//if (qtv->paused /*&& qtv->unpause_pending - qtv->curtime < 0*/) {
-	//	return 1; // when game is paused, go full speed
-	//}
-
 	// This is SRC_DEMO or something, so use 100%, because buffer adjustment works badly in demo case.
 	// Auto adjustment works badly because we always have too much or too less data in buffer in demo(mvd file) case.
 	if (qtv->src.type != SRC_TCP)
@@ -1321,7 +1317,6 @@ int QTV_ParseMVD(sv_t *qtv)
 
 	while (low_latency_mode || qtv->curtime >= qtv->parsetime)
 	{
-		unsigned char original_ms = 0;
 		qbool hidden_message = false;
 
 		if (qtv->buffersize < 2)
@@ -1339,8 +1334,6 @@ int QTV_ParseMVD(sv_t *qtv)
 
 		buffer = qtv->buffer;
 		message_type = buffer[1] & dem_mask;
-
-		original_ms = buffer[0];
 
 		// If streaming from server, use the elapsed time when paused rather than gametime
 		hidden_message = (message_type == dem_multiple && (qtv->extension_flags_mvd1 & MVD_PEXT1_HIDDEN_MESSAGES) && LittleLong(*((unsigned int*)&buffer[2])) == 0);
