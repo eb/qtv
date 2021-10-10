@@ -335,7 +335,7 @@ void HTTPSV_GenerateNowPlaying(cluster_t *cluster, oproxy_t *dest)
 				Net_ProxySend(cluster, dest, buffer, strlen(buffer));
 			}
 			else {
-				snprintf(buffer, sizeof(buffer), "        <td class=\"wn\"><span class=\"qtvfile\"><a href=\"qw://%i@n%s/qtvplay\">Watch&nbsp;now!</a></span></td>\n", streams->streamid, stream_address);
+				snprintf(buffer, sizeof(buffer), "        <td class=\"wn\"><span class=\"qtvfile\"><a href=\"qw://%i@%s/qtvplay\">Watch&nbsp;now!</a></span></td>\n", streams->streamid, stream_address);
 				Net_ProxySend(cluster, dest, buffer, strlen(buffer));
 			}
 		}
