@@ -631,7 +631,7 @@ void HTTPSV_GenerateAdmin(cluster_t *cluster, oproxy_t *dest, int streamid, char
 void HTTPSV_GenerateDemoListing(cluster_t *cluster, oproxy_t *dest)
 {
 	int i;
-	char link[1024],
+	char link[1024 * 2],
 	name[sizeof(cluster->availdemos[0].name) * 5],
 	href[sizeof(cluster->availdemos[0].name) * 5];
 	char *s;
@@ -724,7 +724,7 @@ static void MediaPathName(char *buf, size_t bufsize, char *name, char *mediadir)
 
 void HTTPSV_GenerateLevelshot(cluster_t *cluster, oproxy_t *dest, char *name)
 {
-	char pathname[256];
+	char pathname[256 + 2];
 	int s;
 
 	if (dest->buffer_file)
@@ -800,7 +800,7 @@ void HTTPSV_GenerateRSS(cluster_t *cluster, oproxy_t *dest, char *str)
 	char *item_fmt = NULL;
 	char *server = NULL;
 	char *link_fmt = NULL;
-	char link[1024];
+	char link[1024 * 2];
 	char *s = NULL;
 	sv_t *streams;
 	char playerlist[1024];
@@ -837,7 +837,7 @@ void HTTPSV_GenerateRSS(cluster_t *cluster, oproxy_t *dest, char *str)
 	link_fmt = "http://%s/watch.qtv?sid=%i";
 
 	// Estimate the size of the item buffer.
-	item_len = strlen(link_fmt) + strlen(hostname) + 2048;
+	item_len = strlen(link_fmt) + strlen(hostname) + 1024 * 5;
 	s = Sys_malloc(item_len);
 
 	// Send RSS header.

@@ -350,8 +350,8 @@ static qbool SV_QTVValidateAuthentication(authmethod_t authmethod, const char* p
 	if (authmethod == QTVAM_CCITT) {
 		short crc;
 
-		crc = QCRC_Block(authchallenge, strlen(authchallenge));
-		crc = QCRC_Block_Continue(our_password, strlen(our_password), crc);
+		crc = QCRC_Block((unsigned char*)authchallenge, strlen(authchallenge));
+		crc = QCRC_Block_Continue((unsigned char*)our_password, strlen(our_password), crc);
 
 		return (crc == atoi(password_supplied));
 	}

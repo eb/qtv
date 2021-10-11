@@ -86,7 +86,7 @@ Responds with all the info that qplug or qspy can see
 static void SVC_Status (cluster_t *cluster)
 {
 	static char buf_data[MSG_BUF_SIZE]; // static  - so it not allocated each time
-	static char tmp[1024]; // static too
+	static char tmp[1024 + 1]; // static too
 
 	netmsg_t buf;
 	int opt = (Cmd_Argc() > 1) ? atoi(Cmd_Argv(1)) : 0; // there possible to provide options for status command.

@@ -171,7 +171,7 @@ void Clcmd_Say_f(sv_t *qtv, oproxy_t *prox)
 {
 	char buffer[1024 + 100], text[1024], text2[1024] = {0}, name[MAX_INFO_KEY], *args, *prefix;
 	netmsg_t msg;
-	int j;
+	int j, ret;
 	qbool say_game = false;
 
 	if (isSayFlood(qtv, prox))
@@ -205,15 +205,18 @@ void Clcmd_Say_f(sv_t *qtv, oproxy_t *prox)
 
 	if (say_game)
 	{
-		snprintf(text, sizeof(text), "%s \"%s#%d:%s: %s\"", Cmd_Argv(0), prefix, prox->id, Info_Get(&prox->ctx, "name", name, sizeof(name)), args);
-
-		if ( !CmdToUpstream(qtv, text) )
+		ret = snprintf(text, sizeof(text), "%s \"%s#%d:%s: %s\"", Cmd_Argv(0), prefix, prox->id, Info_Get(&prox->ctx, "name", name, sizeof(name)), args);
+		if (ret >= sizeof(text) || !CmdToUpstream(qtv, text) )
 			Sys_Printf("say_game failed\n");
 
 		return;
 	}
 
-	snprintf(text, sizeof(text), "#0:qtv_%s:#%d:%s: %s", Cmd_Argv(0), prox->id, Info_Get(&prox->ctx, "name", name, sizeof(name)), args);
+	ret = snprintf(text, sizeof(text), "#0:qtv_%s:#%d:%s: %s", Cmd_Argv(0), prox->id, Info_Get(&prox->ctx, "name", name, sizeof(name)), args);
+	if (ret >= sizeof(text)) {
+		Sys_Printf("say failed\n");
+		return;
+	}
 
 	InitNetMsg(&msg, buffer, sizeof(buffer));
 
