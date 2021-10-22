@@ -235,7 +235,7 @@ void Cluster_Run(cluster_t *cluster, qbool dowait, qbool down)
 	SV_UDP_Frame(cluster);
 
 	// Look for any other proxies wanting to muscle in on the action.
-	SV_FindProxies(cluster->tcpsocket, cluster);
+	SV_FindProxies(cluster->tcpsocket, cluster, 16);
 
 	// Serve pending proxies.
 	SV_ReadPendingProxies(cluster); 

@@ -887,7 +887,8 @@ void SV_ProxySocketIOStats(oproxy_t *prox, int r, int w)
 	}
 }
 
-void SV_FindProxies(SOCKET qtv_sock, cluster_t *cluster)
+// Return true if we could try accept more clients.
+static qbool SV_FindProxy(SOCKET qtv_sock, cluster_t *cluster)
 {
 	oproxy_t *prox;
 	SOCKET sock;
@@ -897,45 +898,60 @@ void SV_FindProxies(SOCKET qtv_sock, cluster_t *cluster)
 	unsigned long nonblocking = true;
 
 	if (qtv_sock == INVALID_SOCKET)
-		return;
+		return false;
 
 	addrlen = sizeof(addr);
 	if ((sock = accept(qtv_sock, (struct sockaddr *) &addr, &addrlen)) == INVALID_SOCKET)
-		return;
+		return false;
+
+	// We could check if we are full early ofcourse and skip function altogether,
+	// but it all matter of taste and how you see such situation should be handled.
+	// IMO we should accept connections and close them, that would tell remote side what we are full.
+	if (cluster->numproxies >= get_maxclients())
+	{
+		// FIXME: probably we should send something as reply...
+		closesocket(sock);
+		return true;
+	}
 
 	if (SV_IsBanned(&addr))
 	{
 		char ip[] = "xxx.xxx.xxx.xxx";
 		Sys_DPrintf("rejected connect from banned ip: %s\n", Net_BaseAdrToString(&addr, ip, sizeof(ip)));
 		closesocket(sock);
-		return;
+		return true;
 	}
 
 	if (ioctlsocket(sock, FIONBIO, &nonblocking) == INVALID_SOCKET) 
 	{
 		Sys_Printf("SV_FindProxies: ioctl FIONBIO: (%i)\n", qerrno);
 		closesocket(sock);
-		return;
+		return true;
 	}
 
 	if (!TCP_Set_KEEPALIVE(sock))
 	{
 		Sys_Printf("SV_FindProxies: TCP_Set_KEEPALIVE: failed\n");
 		closesocket(sock);
-		return;
-	}
-
-	if (cluster->numproxies >= get_maxclients())
-	{
-		// FIXME: probably we should send something as reply...
-		closesocket(sock);
-		return;
+		return true;
 	}
 
 	prox = SV_NewProxy((void*) &sock, true, &addr);
 
 	prox->next = cluster->pendingproxies;
 	cluster->pendingproxies = prox;
+
+	return true;
+}
+
+void SV_FindProxies(SOCKET qtv_sock, cluster_t *cluster, unsigned int proxies)
+{
+	unsigned int i;
+	for (i = 0; i < proxies; i++) {
+		if (!SV_FindProxy(qtv_sock, cluster)) {
+			return;
+		}
+	}
 }
 
 static void SV_CheckMVDPort(cluster_t *cluster, int port)

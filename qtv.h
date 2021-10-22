@@ -1003,7 +1003,7 @@ char			*QTV_SV_HEADER(oproxy_t *prox, float qtv_ver);
 void			SV_ReadPendingProxies(cluster_t *cluster);
 
 // Serve pending proxies.
-void			SV_FindProxies(SOCKET qtv_sock, cluster_t *cluster);
+void			SV_FindProxies(SOCKET qtv_sock, cluster_t *cluster, unsigned int proxies);
 
 // add read/write stats for prox, qtv, cluster
 void			SV_ProxySocketIOStats(oproxy_t *prox, int r, int w);
