@@ -622,15 +622,6 @@ static qbool SV_CheckForQTVRequest(cluster_t *cluster, oproxy_t *pend)
 		return false;
 	}
 
-	if (cluster->numproxies >= get_maxclients())
-	{
-		Net_ProxyPrintf(pend, "%s"
-							  "TERROR: This QTV has reached it's connection limit\n\n",
-							  QTV_SV_HEADER(pend, QTV_VERSION));
-		pend->flushing = true;
-		return false;
-	}
-
 	pend->qtv = qtv;
 
 	// link it to the list
