@@ -162,7 +162,7 @@ SOCKET Net_TCPListenPort(int port)
 	{
 		// error.
 	}
-	else if (listen(sock, 3) == -1)	// Don't listen for too many clients.
+	else if (listen(sock, 256) == -1)
 	{
 		// error.
 	}
