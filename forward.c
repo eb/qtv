@@ -357,6 +357,8 @@ void Net_SendConnectionMVD_1_0(sv_t *qtv, oproxy_t *prox)
 	Prox_SendMessage(&g_cluster, prox, msg.data, msg.cursize, dem_read, (unsigned)-1);
 	msg.cursize = 0;
 
+	Prox_SendPlayerStats(qtv, prox);
+
 	//we do need to send entity states.
 	Prox_SendInitialEnts(qtv, prox, &msg);
 	Prox_SendMessage(&g_cluster, prox, msg.data, msg.cursize, dem_read, (unsigned)-1);
