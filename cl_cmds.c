@@ -1071,6 +1071,11 @@ static ucmd_t ucmds[] =
 	{"ptrack",			Clcmd_Ptrack_f},
 	{"follow",			Clcmd_Follow_f},
 
+// "qul" - is a command for user list update.
+// We does not process user list update from downstream.
+// This could happend in case of chaining (downstream is QTV).
+	{"qul",				NULL},
+
 //	{"qtvnew",			Clcmd_New_f},
 	{"qtvsoundlist",	Clcmd_Soundlist_f},
 	{"qtvmodellist",	Clcmd_Modellist_f},
