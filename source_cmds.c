@@ -97,7 +97,7 @@ void playdemo_f(void)
 		return;
 	}
 
-	snprintf(addr, sizeof(addr), "demo:%s", Cmd_Argv(1));
+	snprintf(addr, sizeof(addr), "file:%s", Cmd_Argv(1));
 
 	if (!QTV_NewServerConnection(&g_cluster, addr, Cmd_Argv(2), false, false, false, false)) {
 		Sys_Printf("Failed to open demo %s\n", addr);

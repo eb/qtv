@@ -447,7 +447,7 @@ qbool QTV_Connect(sv_t *qtv, const char *serverurl)
 		qtv->src.type = SRC_TCP;
 		ip += 4;
 	}
-	else if (!strncmp(ip, "demo:", 5))
+	else if (!strncmp(ip, "demo:", 5)) // deprecated, use "file:" instead.
 	{
 		qtv->src.type = SRC_DEMO;
 		ip += 5;

@@ -158,7 +158,7 @@ static sv_t *SV_ReadDemoRequest(cluster_t *cluster, oproxy_t *pend, const char *
 	char buf[256];
 	sv_t *qtv = NULL;
 
-	snprintf(buf, sizeof(buf), "demo:%s", demoname);
+	snprintf(buf, sizeof(buf), "file:%s", demoname);
 	qtv = QTV_NewServerConnection(cluster, buf, "", false, true, true, false);
 	if (!qtv)
 	{
