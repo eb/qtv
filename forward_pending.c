@@ -391,17 +391,26 @@ static qbool SV_CheckForQTVRequest(cluster_t *cluster, oproxy_t *pend)
 	char *colon = NULL;
 	char userinfo[sizeof(pend->inbuffer)] = {0};
 	float usableversion = 0;
-	int parse_end;
+	int parse_end = 0;
 	char *e = (char *)pend->inbuffer;
 	char *s = e;
 	char password[256] = { 0 };
 	authmethod_t authmethod = QTVAM_NONE;
 
 	// Parse a QTV request.
-	while (*e)
+	while (*e && parse_end == 0)
 	{
 		if (*e == '\n' || *e == '\r')
 		{
+			if (e[0] == '\n' && e[1] == '\n')
+			{
+				parse_end = e + 2 - (char *)pend->inbuffer;
+			}
+			else if (e[0] == '\n' && e[1] == '\r' && e[2] == '\n')
+			{
+				parse_end = e + 3 - (char *)pend->inbuffer;
+			}
+
 			*e = '\0';
 			colon = strchr(s, ':');
 
@@ -525,7 +534,6 @@ static qbool SV_CheckForQTVRequest(cluster_t *cluster, oproxy_t *pend)
 	//
 	// Skip connection part in input buffer but not whole buffer because there may be some command from client already.
 	//
-	parse_end = e - (char *)pend->inbuffer;
 	if (parse_end > 0 && parse_end < sizeof(pend->inbuffer))
 	{
 		pend->inbuffersize -= parse_end;
