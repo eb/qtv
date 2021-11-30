@@ -273,7 +273,7 @@ int main(int argc, char **argv)
 	g_cluster.tcpsocket   = INVALID_SOCKET;
 	g_cluster.udpsocket   = INVALID_SOCKET;
 	g_cluster.buildnumber = Sys_Build_Number();
-	g_cluster.nextUserId  = 1; // Lets count users from 1.
+	g_cluster.nextUserId  = 0;
 
 	Info_Init();	// Info strings init.
 	Cbuf_Init();	// Command buffer init.

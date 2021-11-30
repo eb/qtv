@@ -741,45 +741,35 @@ void SV_ReadPendingProxies(cluster_t *cluster)
 
 static qbool client_ids[MAX_QTV_CLIENTS];
 
-static int SV_ProxyGenerateID(void)
+static int SV_ProxyGetId(void)
 {
 	int id, i;
 
 	for (i = 0; i < MAX_QTV_CLIENTS; i++)
 	{
 		id = (i + g_cluster.nextUserId) % MAX_QTV_CLIENTS;
-		if (!id)
-			continue; // do not allow zero id
 
 		if (!client_ids[id])
 		{
+			client_ids[id] = true;
 			g_cluster.nextUserId = (id + 1) % MAX_QTV_CLIENTS;
-			g_cluster.nextUserId = max(1, g_cluster.nextUserId); // do not allow zero id
-			return id;
+			return id + 1;
 		}
 	}
 
-	Sys_Error("SV_ProxyGenerateID: no free id");
+	Sys_Error("SV_ProxyGetId: no free id");
 
 	return 0;
 }
 
-static void SV_ProxyIdFreed(int id)
+static void SV_ProxyFreeId(int id)
 {
+	id--;
 	if (id < 0 || id >= MAX_QTV_CLIENTS)
-		Sys_Error("SV_ProxyIdFreed: wrong id %d", id);
+		Sys_Error("SV_ProxyFreeId: wrong id %d", id + 1);
 
 	client_ids[id] = false;
 }
-
-static void SV_ProxyIdUsed(int id)
-{
-	if (id < 0 || id >= MAX_QTV_CLIENTS)
-		Sys_Error("SV_ProxyIdUsed: wrong id %d", id);
-
-	client_ids[id] = true;
-}
-
 
 // Just allocate memory and set some fields, do not perform any linkage to any list.
 // s = Either a socket or file (demo).
@@ -807,8 +797,7 @@ oproxy_t *SV_NewProxy(void *s, qbool socket, struct sockaddr_in *addr)
 	prox->init_time		= Sys_Milliseconds();
 	prox->io_time		= Sys_Milliseconds();
 
-	prox->id			= SV_ProxyGenerateID();
-	SV_ProxyIdUsed(prox->id);
+	prox->id			= SV_ProxyGetId();
 
 	// Since infostrings count is limited, we reserve at least the name.
 	if(!Info_Set(&prox->ctx, "name", "")) 
@@ -836,7 +825,7 @@ oproxy_t *SV_NewProxy(void *s, qbool socket, struct sockaddr_in *addr)
 // Just free memory and handles, do not perfrom removing from any list.
 void SV_FreeProxy(oproxy_t *prox)
 {
-	SV_ProxyIdFreed(prox->id);
+	SV_ProxyFreeId(prox->id);
 
 	if (prox->qtv)
 		Prox_UpdateProxiesUserList(prox->qtv, prox, QUL_DEL);
