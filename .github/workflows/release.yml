@@ -1,0 +1,40 @@
+on:
+  push:
+    branches:
+      - master
+
+name: Create release
+
+jobs:
+  build:
+    name: Create release
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build code
+        run: |
+          sudo apt update
+          sudo apt install build-essential mingw-w64 python3-dev python3-venv ninja-build cmake pkg-config
+          python3 -m venv venv
+          venv/bin/python3 -m pip install -r requirements.txt
+          venv/bin/meson build-linux-amd64 --buildtype=release --cross-file tools/cross-compilation/linux-amd64.txt
+          ninja -v -C build-linux-amd64
+          venv/bin/meson build-windows-x86 --buildtype=release --cross-file tools/cross-compilation/windows-x86.txt
+          ninja -v -C build-windows-x86
+          tar cfvz qtv-linux-amd64.tar.gz -C build-linux-amd64 qtv
+          tar cfvz qtv-windows-x86.tar.gz -C build-windows-x86 qtv.exe
+      - name: Remove tag and release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        with:
+          delete_release: true
+          tag_name: snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "qtv-linux-amd64.tar.gz,qtv-windows-x86.tar.gz"
+          commit: ${{ github.sha }}
+          tag: snapshot
+          token: ${{ secrets.GITHUB_TOKEN }}
