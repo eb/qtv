@@ -43,7 +43,7 @@ set(SRC_COMMON
 ######################################################################################################
 
 # Set base compiler flags
-set(CFLAGS -Wall -O2)
+set(CFLAGS -Wall)
 set(LFLAGS)
 
 
@@ -68,8 +68,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE)
 # Check build target, and included sources and libs
 if(UNIX)
 else()
-	target_link_libraries(${PROJECT_NAME} wsock32)
-	target_link_libraries(${PROJECT_NAME} winmm)
+	target_link_libraries(${PROJECT_NAME} ws2_32)
 	set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc")
 endif()
 
